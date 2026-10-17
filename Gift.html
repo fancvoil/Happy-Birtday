@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#121358">
+<title>Selamat Ulang Tahun!</title>
+<style>
+  @font-face{
+    font-family: "BingBos";
+    src: url(BingBos.otf) format("opentype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  :root{
+    --white:#f2f2f2;
+    --blue-2:#111844;
+    --blue-4:#1b8bd8;
+    --blue-5:#4fc3f7;
+    --blue-glow:#8fe3ff;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    font-family:"BingBos", sans-serif;
+    background: radial-gradient(circle at 50% 20%, #2f578a 0%, #232f72 45%, #121358 100%);
+    color:var(--white);
+    user-select:none;
+  }
+  #app{
+    position:relative;
+    width:100%; height:100vh; height:100dvh;
+    overflow:hidden;
+  }
+  button:focus-visible{ outline:3px solid var(--blue-glow); outline-offset:3px; }
+
+  /* ---------- Balon Background ---------- */
+  #balloon-layer{position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;}
+  .balloon{
+    position:absolute;
+    bottom:-160px;
+    width:46px; height:58px;
+    border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;
+    opacity:0.85;
+    animation: floatUp linear infinite;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.15));
+  }
+  .balloon::after{
+    content:"";
+    position:absolute;
+    left:50%; top:100%;
+    width:1px; height:34px;
+    background:rgba(255,255,255,0.5);
+    transform:translateX(-50%);
+  }
+  .balloon::before{
+    content:"";
+    position:absolute;
+    left:50%; bottom:-8px;
+    width:6px; height:8px;
+    background:inherit;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform:translateX(-50%);
+  }
+  @keyframes floatUp{
+    0%{ transform:translateY(0) translateX(0) rotate(-4deg); }
+    25%{ transform:translateY(-30vh) translateX(20px) rotate(4deg); }
+    50%{ transform:translateY(-60vh) translateX(-16px) rotate(-4deg); }
+    75%{ transform:translateY(-90vh) translateX(14px) rotate(4deg); }
+    100%{ transform:translateY(-130vh) translateX(0) rotate(-4deg); }
+  }
+
+  /* ---------- Stars background ---------- */
+  #starsBg{ position:absolute; inset:0; z-index:1; pointer-events:none; }
+  .star{
+    position:absolute;
+    width:3px; height:3px;
+    background:#fff; border-radius:50%;
+    box-shadow:0 0 6px #fff;
+    animation: twinkle 1.5s infinite alternate;
+  }
+  @keyframes twinkle{
+    0%{opacity:0.2; transform:scale(0.7);}
+    50%{opacity:1; transform:scale(1.3);}
+    100%{opacity:0.3; transform:scale(0.8);}
+  }
+
+  /* ---------- Screens ---------- */
+  .screen{
+    position:absolute; inset:0; z-index:5;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .5s ease, visibility 0s linear .5s;
+  }
+  .screen.active{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity .5s ease, visibility 0s;
+  }
+
+  /* ---------- Ready screen ---------- */
+  #ready-word{
+    font-size:clamp(36px, 14vw, 64px);
+    letter-spacing:4px;
+    color:var(--white);
+    background:#0d47a1;
+    border:4px solid var(--white);
+    border-radius:100px;
+    padding:22px 30px;
+    cursor:pointer;
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.08); }
+  }
+
+  /* ---------- Countdown screen ---------- */
+  #countdown-num{
+    font-size:clamp(80px, 26vw, 140px);
+    color:var(--white);
+    text-shadow:0 0 20px var(--blue-5), 0 0 50px var(--blue-4);
+  }
+  .pop{ animation:popScale .8s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes popScale{
+    0%{ transform:scale(0.2); opacity:0; }
+    40%{ transform:scale(1.3); opacity:1; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+
+  /* ---------- Message screen ---------- */
+  #message-screen{ justify-content:flex-start; padding-top:8vh; gap:14px; overflow-y:auto; }
+  #hbd-title{
+    font-size:clamp(22px, 6.6vw, 28px);
+    line-height:1.7;
+    color:var(--blue-glow);
+    text-shadow:0 0 10px var(--blue-5);
+  }
+
+  /* Cake */
+  #cake-wrap{
+    cursor:pointer;
+    margin:10px 0 6px 0;
+    transform:scale(1);
+    transition:transform .15s ease;
+  }
+  #cake-wrap:active{ transform:scale(0.94); }
+  #cake-svg{ width:150px; height:auto; overflow: visible; filter:drop-shadow(0 6px 10px rgba(0,0,0,0.4)); }
+  .flame{
+    animation:flicker 0.5s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin:center bottom;
+  }
+  .flame:nth-of-type(2){animation-delay:-.3s;}
+  .flame:nth-of-type(3){animation-delay:-.6s;}
+  @keyframes flicker{
+    0%{ transform:scaleY(1);  opacity:1; }
+    100%{ transform:scaleY(1.50); opacity:.85; }
+  }
+  #tap-cake-hint{ font-size:8px; opacity:.6; margin-bottom:10px; letter-spacing:1px; }
+  #cake-overlay{
+    position: fixed; inset: 0; z-index: 30;
+    background: rgba(10,20,50,.7);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  #cake-overlay.active{opacity: 1; visibility: visible; pointer-events: auto;}
+  #big-cake{
+    width: min(70vw,320px); height: auto;
+    cursor: pointer; touch-action: manipulation;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.4));
+  }
+  #big-cake-hint{font-size: 10px; opacity: .7; letter-spacing: 1px;}
+
+  /* Buttons */
+  .pixel-btn{
+    font-family:"BingBos", sans-serif;
+    font-size:10px;
+    padding:14px 18px;
+    background:#1b2cc1;
+    color:var(--white);
+    border:3px solid var(--white);
+    box-shadow:0 4px 0 var(--blue-2), 0 0 14px rgba(79,195,247,0.5);
+    cursor:pointer;
+    letter-spacing:1px;
+    border-radius:4px;
+    margin:6px;
+    touch-action:manipulation;
+  }
+  .pixel-btn:active{
+    transform:translateY(3px);
+    box-shadow:0 1px 0 var(--blue-2);
+  }
+  #message-buttons{
+    margin-top:8px;
+    display:flex; flex-direction:column; align-items:center;
+    padding-bottom:24px;
+  }
+
+  /* Popup */
+  #popup-overlay{
+    position:fixed; inset:0; z-index:50;
+    background:rgba(31, 36, 89, 0.395);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .3s ease;
+    padding:20px;
+  }
+  #popup-overlay.active{ opacity:1; visibility:visible; pointer-events:auto; }
+  #popup-box{
+    background:#0a2647;
+    border:3px solid var(--white);
+    box-shadow:0 0 24px rgba(17, 82, 112, 0.6);
+    border-radius:8px;
+    padding:25px 20px;
+    max-width:500px;
+    text-align:center;
+    transform:scale(0.8);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  #popup-overlay.active #popup-box{ transform:scale(1); }
+  #popup-text{ font-size:20px; line-height:1.5; color:var(--white); margin-bottom:18px; }
+  #popup-btns{ display:flex; justify-content:center; flex-wrap:wrap; }
+  .popup-small-btn{ font-size:9px; padding:10px 14px; }
+
+  /* Confetti canvas */
+  #confetti-canvas{ position:fixed; inset:0; width: 100%; height: 100%; z-index: 40;  pointer-events:none; }
+
+  /* Music toggle */
+  #music-toggle{
+    position:fixed; top:12px; right:12px; z-index:60;
+    font-size:14px;
+    background:rgba(11, 60, 117, 0.25);
+    border:0; border-radius:8px; color:var(--white);
+    width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+
+  /* ---------- Fortune Cookie Jackpot (semua di-scope ke #fortune-screen) ---------- */
+  #fortune-screen{
+    --fc-gold:#ffcb56;
+    --fc-ink:#0a2647;
+    justify-content:flex-start; overflow-y:auto;
+    font-family:"BingBos", sans-serif; color:var(--white);
+  }
+  #fortune-screen .machine{
+    margin:auto; width:min(340px,100%); padding:22px 22px 28px; text-align:center;
+    background:linear-gradient(160deg,#0d47a1,#0a2f6e);
+    border:4px solid var(--white); border-radius:28px 28px 40px 40px;
+    box-shadow:0 24px 50px rgba(0,0,0,.45);
+  }
+  #fortune-screen h1{ margin:0 0 4px; font-size:clamp(1.4rem,7vw,2rem); font-weight:800; letter-spacing:.02em; }
+  #fortune-screen .sub{ margin:0 0 16px; font-size:.95rem; opacity:.85; }
+  #fortune-screen .lights{ display:flex; justify-content:space-between; padding:0 6px; margin-bottom:10px; }
+  #fortune-screen .lights i{ width:12px; height:12px; border-radius:50%; background:var(--fc-gold); opacity:.55; }
+  #fortune-screen .lights.on i{ opacity:1; box-shadow:0 0 10px var(--fc-gold); animation:fcBlink .35s infinite alternate; }
+  #fortune-screen .lights.on i:nth-child(even){ animation-delay:.17s; }
+  @keyframes fcBlink{ to{ opacity:.25; } }
+
+  /* tinggi kotak diatur satu tempat (--h); window = --h + 12px border atas/bawah */
+  #fortune-screen .window{
+    --h:260px;
+    position:relative; height:calc(var(--h) + 12px); overflow:hidden;
+    background:#f2f2f2;
+    border:6px solid var(--white); border-radius:18px;
+    box-shadow:inset 0 10px 18px rgba(0,0,0,.35), inset 0 -10px 18px rgba(0,0,0,.35);
+  }
+  #fortune-screen .reel{ position:absolute; inset:0 0 auto 0; will-change:transform; }
+  #fortune-screen .cell{ height:var(--h); display:grid; place-items:center; }
+  #fortune-screen .cell img{ width:80%; max-height:86%; object-fit:contain; filter:drop-shadow(0 8px 6px rgba(80,40,0,.35)); }
+  #fortune-screen .fc-fallback{ font-size:110px; line-height:1; }
+  #fortune-screen .window.win{ animation:fcPop .5s ease-out; }
+  @keyframes fcPop{ 40%{ transform:scale(1.04); } }
+
+  #fortune-screen .spin{
+    --d:92px; width:var(--d); height:var(--d); margin-top:24px; border-radius:50%; cursor:pointer;
+    border:5px solid #f2f2f2; color:#fff; font-family:"BingBos", sans-serif; font-size:1rem; line-height:1; letter-spacing:.04em;
+    background:#0d47a1;
+    transition:transform .05s, box-shadow .05s;
+  }
+  #fortune-screen .spin:active:not(:disabled){ transform:translateY(6px); box-shadow:0 2px 0 #5a0a0a, 0 6px 10px rgba(0,0,0,.45), inset 0 3px 6px rgba(255,255,255,.35); }
+  #fortune-screen .spin:disabled{ filter:grayscale(.6) brightness(.8); cursor:not-allowed; }
+
+  #fortune-back{ position:fixed; top:12px; left:12px; width:38px; height:38px; margin:0; padding:0; font-size:16px; line-height:1; }
+
+  #fortune-screen .fc-overlay{
+    position:fixed; inset:0; display:none; place-items:center; padding:20px;
+    background:rgba(10,20,50,.75); z-index:10;
+  }
+  #fortune-screen .fc-overlay.show{ display:grid; }
+  #fortune-screen .fc-overlay canvas{position: absolute;inset: 0;width: 100%;height: 100%;
+  pointer-events: none;}
+  #fortune-screen .slip{
+    position: relative; z-index: 1;
+    width:min(340px,100%); padding:28px 24px 22px; text-align:center; color:var(--fc-ink);
+    background:#f2f2f2; border-radius:6px; border-top:6px solid var(--fc-gold);
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    animation:fcUnroll .45s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes fcUnroll{ from{ transform:scale(.6) rotate(-4deg); opacity:0; } }
+  #fortune-screen .slip small{ display:block; margin-bottom:10px; color:#0d47a1; font-weight:600; }
+  #fortune-screen .slip p{ margin:0 0 20px; font-size:1.2rem; line-height:1.4; font-weight:600; }
+
+  @media (prefers-reduced-motion:reduce){
+    .balloon, .star, .flame, #ready-word{ animation:none; }
+    #fortune-screen .lights.on i, #fortune-screen .slip, #fortune-screen .window.win{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="balloon-layer"></div>
+  <div id="starsBg"></div>
+
+  <button id="music-toggle" title="Musik" aria-label="Nyalakan/matikan musik">🔊</button>
+
+  <!-- SCREEN 1: READY -->
+  <div class="screen active" id="ready-screen">
+    <div id="ready-word" role="button" tabindex="0">READY</div>
+  </div>
+
+  <!-- SCREEN 2: COUNTDOWN -->
+  <div class="screen" id="countdown-screen">
+    <div id="countdown-num" class="pop">3</div>
+  </div>
+
+  <!-- SCREEN 3: MESSAGE -->
+  <div class="screen" id="message-screen">
+    <div id="hbd-title">SELAMAT<br>ULANG TAHUN!</div>
+
+    <div id="cake-wrap">
+      <svg id="cake-svg" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+        <ellipse class="flame" cx="100" cy="20" rx="4" ry="9" fill="#ffd54f"/>
+        <ellipse class="flame" cx="70" cy="24" rx="3.5" ry="7" fill="#ffd54f"/>
+        <ellipse class="flame" cx="130" cy="24" rx="3.5" ry="7" fill="#ffd54f"/>
+        <rect x="97" y="29" width="6" height="20" fill="#e3f2fd"/>
+        <rect x="67" y="31" width="6" height="18" fill="#e3f2fd"/>
+        <rect x="127" y="31" width="6" height="18" fill="#e3f2fd"/>
+        <rect x="30" y="50" width="140" height="45" rx="6" fill="#4fc3f7"/>
+        <rect x="30" y="50" width="140" height="12" fill="#8fe3ff"/>
+        <rect x="20" y="95" width="160" height="55" rx="6" fill="#1565c0"/>
+        <rect x="20" y="95" width="160" height="12" fill="#42a5f5"/>
+        <rect x="10" y="150" width="180" height="20" rx="5" fill="#0b3d75"/>
+        <circle cx="60" cy="72" r="5" fill="#ffffff" opacity="0.85"/>
+        <circle cx="100" cy="72" r="5" fill="#ffffff" opacity="0.85"/>
+        <circle cx="140" cy="72" r="5" fill="#ffffff" opacity="0.85"/>
+        <circle cx="45" cy="118" r="5" fill="#e1f5fe" opacity="0.8"/>
+        <circle cx="100" cy="118" r="5" fill="#e1f5fe" opacity="0.8"/>
+        <circle cx="155" cy="118" r="5" fill="#e1f5fe" opacity="0.8"/>
+      </svg>
+    </div>
+    <div id="tap-cake-hint">TAP CAKE</div>
+
+    <div id="message-buttons">
+      <button class="pixel-btn" id="popup-open-btn">TAP</button>
+      <button class="pixel-btn" id="next-btn">NEXT</button>
+      <button class="pixel-btn" id="back-btn">← BACK</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: FORTUNE COOKIE JACKPOT -->
+  <div class="screen" id="fortune-screen">
+    <button class="pixel-btn" id="fortune-back" title="Kembali" aria-label="Kembali">←</button>
+
+    <main class="machine">
+      <h1>Fortune Cookie</h1>
+      <div class="lights" id="fc-lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="window" id="fc-win">
+        <div class="reel" id="fc-reel">
+          <div class="cell"><img src="fortunecookie.png" alt="Fortune Cookie"></div>
+          <div class="cell"><img src="fortunecookie.png" alt="Fortune Cookie"></div>
+          <div class="cell"><img src="fortunecookie.png" alt="Fortune Cookie"></div>
+        </div>
+      </div>
+      <button class="spin" id="fc-btn" aria-label="Putar fortune cookie">SPIN</button>
+    </main>
+
+    <div class="fc-overlay" id="fc-overlay" role="dialog" aria-modal="true" aria-labelledby="fc-msg">
+      <canvas id="fc-confetti"></canvas>
+      <div class="slip">
+        <small>Fortune cookie kamu terpilih!</small>
+        <p id="fc-msg"></p>
+        <button class="pixel-btn" id="fc-close">PUTAR LAGI</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="cake-overlay">
+    <canvas id="big-cake" width="300" height="270"></canvas>
+    <div id="big-cake-hint">TAP TO EAT</div>
+  </div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <div id="popup-overlay">
+    <div id="popup-box">
+      <div id="popup-text"></div>
+      <div id="popup-btns">
+        <button class="pixel-btn popup-small-btn" id="popup-next-btn" aria-label="Pesan berikutnya">&gt;</button>
+        <button class="pixel-btn popup-small-btn" id="popup-close-btn" aria-label="Tutup">x</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Balloons ---------------- */
+const balloonColors = ['#4ea0ff','#7ec8ff','#ffd93d','#ff6b6b','#6bffb0','#c084fc','#ff9f5b'];
+const balloonLayer = document.getElementById('balloon-layer');
+function spawnBalloons(count){
+  for(let i=0;i<count;i++){
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    b.style.left = Math.random()*94 + '%';
+    b.style.background = balloonColors[Math.floor(Math.random()*balloonColors.length)];
+    const dur = 9 + Math.random()*8;
+    b.style.animationDuration = dur + 's';
+    b.style.animationDelay = (-Math.random()*dur) + 's';
+    b.style.width = (34 + Math.random()*24) + 'px';
+    b.style.height = (44 + Math.random()*30) + 'px';
+    balloonLayer.appendChild(b);
+  }
+}
+spawnBalloons(14);
+
+/* ================= Stars latar ================= */
+const starsBg = document.getElementById('starsBg');
+function spawnStars(count){
+  starsBg.innerHTML = "";
+  for(let i=0;i<count;i++){
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random()*100 + '%';
+    star.style.top = Math.random()*100 + '%';
+    const size = 2 + Math.random()*3;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.animationDuration = (0.8 + Math.random()*2) + 's';
+    star.style.animationDelay = (Math.random()*2) + 's';
+    starsBg.appendChild(star);
+  }
+}
+spawnStars(70);
+
+/* ---------------- Screen navigation ---------------- */
+const readyScreen = document.getElementById('ready-screen');
+const countdownScreen = document.getElementById('countdown-screen');
+const messageScreen = document.getElementById('message-screen');
+const fortuneScreen = document.getElementById('fortune-screen');
+const countdownNum = document.getElementById('countdown-num');
+const allScreens = [readyScreen, countdownScreen, messageScreen, fortuneScreen];
+
+function showScreen(el){
+  allScreens.forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+
+const readyWord = document.getElementById('ready-word');
+function startFromReady(){
+  startMusic();
+  unlockAudio();
+  showScreen(countdownScreen);
+  runCountdown();
+}
+readyWord.addEventListener('click', startFromReady);
+readyWord.addEventListener('keydown', e => {
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); startFromReady(); }
+});
+
+function popCountdown(n){
+  countdownNum.textContent = n;
+  countdownNum.classList.remove('pop'); void countdownNum.offsetWidth; countdownNum.classList.add('pop');
+  playCountdownAudio();
+}
+
+function runCountdown(){
+  let n = 3;
+  popCountdown(n);
+  const timer = setInterval(() => {
+    n--;
+    if(n > 0){
+      popCountdown(n);
+    } else {
+      clearInterval(timer);
+      showScreen(messageScreen);
+      stopCountdownAudio();
+      playHbdAudio();
+      setTimeout(launchCornerConfetti, 400);
+    }
+  }, 900);
+}
+
+document.getElementById('next-btn').addEventListener('click', () => showScreen(fortuneScreen));
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  stopHbdAudio();
+  showScreen(readyScreen);
+});
+
+/* ---------------- Confetti ---------------- */
+const confettiColors = ['#ff9d50','#1dced8','#ff467a','#ff84ba','#99c2ff','#ffd93d','#ffffff'];
+
+function createConfetti(canvasEl){
+  const c = canvasEl.getContext('2d');
+  let particles = [];
+  let anim = null;
+
+  function fit(){
+    if(canvasEl.width !== canvasEl.clientWidth     ||   canvasEl.height !== canvasEl.clientHeight){
+      canvasEl.width = canvasEl.clientWidth;
+      canvasEl.height = canvasEl.clientHeight;
+    }
+  }
+  function frame(){
+    c.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    particles.forEach(p=>{
+      p.vy +=0.25;
+      p.x +=p.vx;
+      p.y +=p.vy;
+      p.rot += p.vrot;
+      p.life++;
+      c.save();
+      c.translate(p.x,p.y);
+      c.rotate(p.rot* Math.PI/180);
+      c.fillStyle = p.color;
+      c.fillRect(-p.size/2,-p.size/2,p.size,p.size *0.6);
+      c.restore();
+    });
+    particles = particles.filter(p=> p.y <canvasEl.height + 40 && p.life <260);
+    if(particles.length > 0){
+      anim = requestAnimationFrame(frame);
+    } else {
+      c.clearRect(0,0, canvasEl.width, canvasEl.height);
+      anim = null
+    }
+  }
+  function spawn(x, y, count = 90, dir = 0){
+    fit();
+    for(let i = 0; i<count; i++){
+      particles.push({
+        x: x, y:y,
+        vx:(Math.random()-0.5)* 10 + dir*3,
+        vy:-(Math.random()*9+4),
+        size:Math.random()*7+4,
+        color: confettiColors[Math.floor(Math.random()*confettiColors.length)],
+        rot:Math.random()*360,
+        vrot:(Math.random()-0.5)*14,
+        life : 0,
+      });
+    }
+    if(!anim){anim = requestAnimationFrame(frame);}
+  }
+
+  return{spawn};
+}
+
+const cornerConfetti = createConfetti(document.getElementById('confetti-canvas'));
+function launchCornerConfetti(){
+  cornerConfetti.spawn(30,50,70,1);
+  cornerConfetti.spawn(innerWidth-30, 50, 70, -1);
+}
+
+const cakeOverlay = document.getElementById('cake-overlay');
+const bigCake = document.getElementById('big-cake');
+const bigCtx = bigCake.getContext('2d')
+const svgCopy = document.getElementById('cake-svg').cloneNode(true);
+svgCopy.setAttribute('width', 300);
+svgCopy.setAttribute('height', 270);
+const cakeImg = new Image();
+cakeImg.onload = drawCake;
+cakeImg.src = 'data:image/svg+xml;charset=utf-8,'+
+encodeURIComponent(new XMLSerializer().serializeToString(svgCopy));
+
+function drawCake(){
+  bigCtx.globalCompositeOperation = 'source-over';
+  bigCtx.clearRect(0,0, bigCake.width, bigCake.height);
+  bigCtx.drawImage(cakeImg, 0,0, bigCake.width, bigCake.height);
+}
+
+
+const TOTAL_BITES = 27;
+const BITE_R = 38;
+let bites = 0
+
+function openBigCake(){
+  bites = 0;
+  drawCake();
+  cakeOverlay.classList.add('active');
+}
+
+function biteCake(e){
+  if(bites >= TOTAL_BITES) return;
+  
+
+  const rect = bigCake.getBoundingClientRect();
+  const x = (e.clientX-rect.left)* bigCake.width/rect.width;
+  const y = (e.clientY-rect.top)* bigCake.height/rect.height;
+
+  bigCtx.globalCompositeOperation='destination-out';
+  bigCtx.beginPath();
+  bigCtx.arc(x,y,BITE_R, 0, Math.PI *2);
+  bigCtx.fill();
+  bigCtx.globalCompositeOperation = 'source-over';
+
+  bites++;
+  if(bites >= TOTAL_BITES){
+    bigCtx.clearRect(0,0, bigCake.width, bigCake.height);
+    setTimeout(()=> cakeOverlay.classList.remove('active'), 400);
+  }
+}
+
+document.getElementById('cake-wrap').addEventListener('click', openBigCake);
+bigCake.addEventListener('click', biteCake);
+
+/* ---------------- Popup ---------------- */
+const popupOverlay = document.getElementById('popup-overlay');
+const popupText = document.getElementById('popup-text');
+const popupMessages = [
+  "i want to say.............",
+  "your the best, fooooooooooorreveeeeeeeeeeeerrrrrrrr.....😆😆😆😆",
+  "Happy Birtdayy swetty...this is your best day, so pray for the best",
+  "This is all i can provide",
+  "i,m broke;(",
+  "i hope you like it",
+  "Thank you, you have been a good person, i hope it stays that way forefer",
+  "Have hope, perhaps you can make all your dreams come true",
+  "Sorry if it's a bit complicated",
+  "Blieve that you can",
+  "we walk forever👨🏻‍🤝‍👩🏻",
+  "Be happy swety:3"
+];
+let popupIndex = 0;
+
+function openPopup(){
+  popupIndex = 0;
+  popupText.textContent = popupMessages[popupIndex];
+  popupOverlay.classList.add('active');
+}
+function closePopup(){
+  popupOverlay.classList.remove('active');
+}
+document.getElementById('popup-open-btn').addEventListener('click', openPopup);
+document.getElementById('popup-close-btn').addEventListener('click', closePopup);
+document.getElementById('popup-next-btn').addEventListener('click', () => {
+  popupIndex = (popupIndex + 1) % popupMessages.length;
+  popupText.textContent = popupMessages[popupIndex];
+});
+
+/* ---------------- Musik ---------------- */
+const countdownAudio = new Audio('myinstants1.mp3');
+const hbdAudio = new Audio('Hbd.mp3');
+hbdAudio.loop = true;
+
+/*---SOUND FORTUNE COOKIE---*/ 
+
+const spinAudio = new Audio('Spin.mp3');
+const buttonAudio = new Audio('Button_spin.mp3');
+const cheerAudio = new Audio('Cheer_kids.mp3');
+const fcAudio = [spinAudio,buttonAudio,cheerAudio];
+fcAudio.forEach(a=>{a.preload ='auto';});
+
+let musicOn = true;
+const musicToggle = document.getElementById('music-toggle');
+
+function playCountdownAudio(){
+  countdownAudio.currentTime = 0;
+  countdownAudio.muted = !musicOn;
+  countdownAudio.play().catch(() => {});
+}
+function stopCountdownAudio(){
+  countdownAudio.pause();
+  countdownAudio.currentTime = 0;
+}
+function playHbdAudio(){
+  hbdAudio.currentTime = 0;
+  hbdAudio.muted = !musicOn;
+  hbdAudio.play().catch(() => {});
+}
+function stopHbdAudio(){
+  hbdAudio.pause();
+  hbdAudio.currentTime = 0;
+}
+
+function unlockAudio(){
+  hbdAudio.muted = true;
+  const p = hbdAudio.play();
+  if(p && p.then){
+    p.then(() => {
+      if(!messageScreen.classList.contains('active')){
+        hbdAudio.pause();
+        hbdAudio.currentTime = 0;
+      }
+    }).catch(() => {});
+  }
+}
+
+function playFx(a){
+  a.fxStarted = true;
+  a.muted = !musicOn;
+  a.currentTime = 0;
+  const p = a.play();
+  if(p && p.catch) p.catch(()=>{});
+}
+function stopFx(a){
+  a.fxStarted = false;
+  a.pause();
+  a.currentTime = 0;
+}
+
+function unlockFx(a){
+  a.muted = true;
+  const p = a.play();
+  if(p && p.then){
+    p.then(()=>{
+      if(!a.fxStarted){a.pause(); a.currentTime = 0;}
+      a.muted=!musicOn;
+    }) .catch(()=>{})
+  }
+}
+function duckBgMusik(on){hbdAudio.volume = on ? 0.5 : 1;}
+
+function startMusic(){
+  musicOn = true;
+  musicToggle.textContent ='🔊';
+}
+
+function stopMusic(){
+  musicOn = false;
+  musicToggle.textContent ='🔈';
+  countdownAudio.muted = true;
+  hbdAudio.muted = true;
+  fcAudio.forEach(a=>{a.muted = true;});
+}
+
+
+musicToggle.addEventListener('click', () => {
+  if(musicOn){
+    stopMusic();
+  } else {
+    musicOn = true;
+    musicToggle.textContent = '🔊';
+    countdownAudio.muted = false;
+    hbdAudio.muted = false;
+    fcAudio.forEach(a => {a.muted= false;});
+  }
+});
+
+/* ---------------- Fortune Cookie Jackpot ---------------- */
+(function(){
+  const FORTUNES = [
+    "On 20 November, you will take a dump 5 time",
+    "Starting tomorrow, you wil run out of money",
+    "Next year, you'll get kissed by a gay",
+    "if you lick your thumb every day, the person you love will be obsessed with you",
+
+  ];
+
+  const reel    = document.getElementById('fc-reel');
+  const win     = document.getElementById('fc-win');
+  const btn     = document.getElementById('fc-btn');
+  const lights  = document.getElementById('fc-lights');
+  const overlay = document.getElementById('fc-overlay');
+  const msg     = document.getElementById('fc-msg');
+  const close   = document.getElementById('fc-close');
+  const back    = document.getElementById('fortune-back');
+  const fortuneConfetti = createConfetti(document.getElementById('fc-confetti'));
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // tinggi satu kotak diambil langsung dari elemennya, jadi selalu cocok dengan CSS
+  const H = () => reel.firstElementChild.offsetHeight;
+  let spinning = false;
+  let lastIndex = -1;
+  let fxUnlocked = false;
+  const BUTTON_LEAD = 700;
+  const SPIN_MS = 5400;
+
+  // Kalau fortunecookie.png tidak ditemukan, pakai emoji supaya mesin tetap terlihat
+  reel.querySelectorAll('img').forEach(img => {
+    const useFallback = () => {
+      const s = document.createElement('span');
+      s.className = 'fc-fallback';
+      s.textContent = '🥠';
+      img.replaceWith(s);
+    };
+    if(img.complete && img.naturalWidth === 0) useFallback();
+    else img.addEventListener('error', useFallback, { once:true });
+  });
+
+  // Geser strip; modulo membuat gambar tampak berputar tanpa putus
+  function render(y){
+    const h = H();
+    reel.style.transform = `translateY(${-h + (y % h)}px)`;
+  }
+  render(0);
+
+  const easeOut = t => 1 - Math.pow(1 - t, 4);
+
+  function spin(){
+    if(spinning) return;
+    spinning = true;
+    btn.disabled = true;
+    lights.classList.add('on');
+    duckBgMusik(true);
+    playFx(buttonAudio);
+    if(!fxUnlocked){fxUnlocked = true; unlockFx(spinAudio); unlockFx(cheerAudio);}
+    setTimeout(runReel, BUTTON_LEAD);
+  }
+
+  function runReel(){
+    playFx(spinAudio);
+    const h = H();
+    const total = h* (26 + Math.floor(Math.random()*5));
+    const dur = reduce ? 900 : SPIN_MS;
+    const t0 = performance.now();
+    let last = 0;
+  
+    function frame(now){
+      const t = Math.min((now - t0) / dur, 1);
+      const y = total * easeOut(t);
+      render(y);
+      const v = y - last; last = y;
+      reel.style.filter = `blur(${Math.min(5, v / 9)}px)`;
+      if(t < 1) requestAnimationFrame(frame);
+      else finish();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function pickFortune(){
+    let i;
+    do { i = Math.floor(Math.random() * FORTUNES.length); }
+    while(i === lastIndex && FORTUNES.length > 1);
+    lastIndex = i;
+    return FORTUNES[i];
+  }
+
+  function finish(){
+    stopFx(spinAudio);
+    render(0);
+    reel.style.filter = 'none';
+    win.classList.add('win');
+    setTimeout(() => {
+      win.classList.remove('win');
+      lights.classList.remove('on');
+      msg.textContent = pickFortune();
+      overlay.classList.add('show');
+      playFx(cheerAudio);
+      const r = overlay.querySelector('.slip').getBoundingClientRect();
+      fortuneConfetti.spawn(r.left+r.width/2,r.top + r.height/2, 120);
+      close.focus();
+    }, 600);
+  }
+
+  function closeFortune(){
+    overlay.classList.remove('show');
+    stopFx(cheerAudio);
+    duckBgMusik(false);
+    spinning = false;
+    btn.disabled = false;
+    btn.focus();
+  }
+
+  btn.addEventListener('click', spin);
+  close.addEventListener('click', closeFortune);
+  overlay.addEventListener('click', e => { if(e.target === overlay) closeFortune(); });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && overlay.classList.contains('show')) closeFortune();
+  });
+  addEventListener('resize', () => render(0));
+
+  // Tombol kembali: tidak aktif saat mesin masih berputar / hasil sedang tampil
+  back.addEventListener('click', () => {
+    if(spinning) return;
+    showScreen(messageScreen);
+  });
+})();
+</script>
+</body>
+</html>
